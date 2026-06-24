@@ -1,0 +1,10 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-hidden="true">
+  <defs>
+    <linearGradient id="cloud" x1="0%" x2="100%" y1="0%" y2="100%">
+      <stop offset="0%" stop-color="#4f8b6a"/>
+      <stop offset="100%" stop-color="#2a6787"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#cloud)" d="M21 50c-8.3 0-15-6.5-15-14.5S12.7 21 21 21c1 0 2 .1 2.9.3C26.4 14.6 32.6 10 40 10c9.4 0 17 7.4 17 16.5 0 .6 0 1.2-.1 1.8C61.1 30.3 64 34.7 64 40c0 5.5-4.5 10-10 10H21z"/>
+  <text x="32" y="39" font-size="15" font-family="Verdana, sans-serif" font-weight="700" text-anchor="middle" fill="#fff">Aa</text>
+</svg>

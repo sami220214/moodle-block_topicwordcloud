@@ -1,0 +1,113 @@
+.block-topicwordcloud {
+    display: grid;
+    gap: 1rem;
+}
+
+.block-topicwordcloud__prompt {
+    padding: 0.85rem 1rem;
+    border-radius: 0.75rem;
+    background: linear-gradient(135deg, #f3f7f3 0%, #e6f1e9 100%);
+    border: 1px solid #d8e7dc;
+    color: #17361f;
+    font-weight: 600;
+}
+
+.block-topicwordcloud__status {
+    min-height: 1.5rem;
+    color: #345342;
+    font-size: 0.95rem;
+}
+
+.block-topicwordcloud__form {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.block-topicwordcloud__input {
+    width: 100%;
+    min-height: 6rem;
+    border: 1px solid #bfd2c2;
+    border-radius: 0.75rem;
+    padding: 0.85rem;
+    resize: vertical;
+    background: #fff;
+}
+
+.block-topicwordcloud__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.block-topicwordcloud__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.7rem;
+    border-radius: 999px;
+    background: #f4f6f8;
+    border: 1px solid #dde4ea;
+    color: #204050;
+    font-size: 0.85rem;
+}
+
+.block-topicwordcloud__cloud {
+    padding: 1rem;
+    border-radius: 1rem;
+    background:
+        radial-gradient(circle at top left, rgba(84, 140, 102, 0.12), transparent 32%),
+        radial-gradient(circle at bottom right, rgba(33, 87, 137, 0.10), transparent 28%),
+        #fcfefd;
+    border: 1px solid #dce8de;
+}
+
+.block-topicwordcloud__cloudinner {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.9rem 1rem;
+    align-items: center;
+    justify-content: center;
+}
+
+.block-topicwordcloud__word {
+    line-height: 1;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+}
+
+.block-topicwordcloud__word--0 { color: #1f5c42; }
+.block-topicwordcloud__word--1 { color: #286b86; }
+.block-topicwordcloud__word--2 { color: #8a4f1d; }
+.block-topicwordcloud__word--3 { color: #7a2048; }
+.block-topicwordcloud__word--4 { color: #425b1f; }
+.block-topicwordcloud__word--5 { color: #58418d; }
+
+.block-topicwordcloud__sectiontitle {
+    margin: 0.5rem 0;
+    font-size: 1rem;
+    color: #17361f;
+}
+
+.block-topicwordcloud__toolbar,
+.block-topicwordcloud__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.block-topicwordcloud__empty {
+    margin: 0;
+    color: #667781;
+    font-style: italic;
+}
+
+@media (max-width: 767px) {
+    .block-topicwordcloud__cloudinner {
+        justify-content: flex-start;
+    }
+
+    .block-topicwordcloud__word {
+        max-width: 100%;
+        overflow-wrap: anywhere;
+    }
+}

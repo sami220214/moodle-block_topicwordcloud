@@ -1,6 +1,6 @@
 # block_topicwordcloud
 
-Topic word cloud is a Moodle 4.5.10 block. The block collects words submitted by students, merges identical words case-insensitively, removes stop words, and displays the results as a word cloud with analytics.
+Topic word cloud is a Moodle block. The block collects words submitted by students, merges identical words case-insensitively, removes stop words, and displays the results as a word cloud with analytics.
 
 ## Requirements
 

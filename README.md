@@ -1,6 +1,6 @@
 # block_topicwordcloud
 
-Sanapilvi-lohko Moodle 4.5.10:lle. Lohko kerää opiskelijoiden syöttämiä sanoja, yhdistää samat sanat case-insensitive-logiikalla, poistaa stop-sanoja ja näyttää tulokset sanapilvenä sekä analytiikkana.
+Sanapilvi-lohko Moodleen. Lohko kerää opiskelijoiden syöttämiä sanoja, yhdistää samat sanat case-insensitive-logiikalla, poistaa stop-sanoja ja näyttää tulokset sanapilvenä sekä analytiikkana.
 
 ## Vaatimukset
 

@@ -10,7 +10,7 @@ jobs:
       postgres:
         image: postgres:16
         env:
-          POSTGRES_USER: 'postgres'
+          POSTGRES_USER: 'root'
           POSTGRES_HOST_AUTH_METHOD: 'trust'
         ports:
           - 5432:5432
@@ -61,6 +61,10 @@ jobs:
           # Uncomment this to run Behat tests using the Moodle App.
           # MOODLE_APP: 'true'
 
+      - name: Grunt
+        if: ${{ !cancelled() }}
+        run: moodle-plugin-ci grunt --max-lint-warnings 0
+
       - name: PHP Lint
         if: ${{ !cancelled() }}
         run: moodle-plugin-ci phplint
@@ -88,9 +92,6 @@ jobs:
         if: ${{ !cancelled() }}
         run: moodle-plugin-ci mustache
 
-      - name: Grunt
-        if: ${{ !cancelled() }}
-        run: moodle-plugin-ci grunt --max-lint-warnings 0
       - name: PHPUnit tests
         if: ${{ !cancelled() }}
         run: moodle-plugin-ci phpunit --fail-on-warning

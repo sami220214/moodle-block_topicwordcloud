@@ -20,7 +20,7 @@
  * @copyright 2026 Sami Simpanen
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-define("block_topicwordcloud/cloud", ["core/ajax", "core/templates"], function(Ajax, Templates) {
+define("block_topicwordcloud/cloud", ["core/ajax", "core/notification", "core/templates"], function(Ajax, Notification, Templates) {
     "use strict";
 
     const methodNames = {
@@ -45,6 +45,10 @@ define("block_topicwordcloud/cloud", ["core/ajax", "core/templates"], function(A
         const {html, js} = await Templates.renderForPromise(templateName, context);
         Templates.replaceNodeContents(target, html, js);
     };
+
+    const confirmAction = (message) => new Promise((resolve) => {
+        Notification.confirm("", message, resolve, () => resolve(false));
+    });
 
     const buildTableContext = (rows, showUsers, strings, canManage, includeApprove) => {
         return {
@@ -148,13 +152,13 @@ define("block_topicwordcloud/cloud", ["core/ajax", "core/templates"], function(A
     };
 
     const runAction = async(root, params, action, word = "") => {
-        if (action === "reset" && !window.confirm(params.strings.confirmreset)) {
+        if (action === "reset" && !await confirmAction(params.strings.confirmreset)) {
             return;
         }
-        if (action === "deleteword" && !window.confirm(params.strings.confirmdeleteword)) {
+        if (action === "deleteword" && !await confirmAction(params.strings.confirmdeleteword)) {
             return;
         }
-        if (action === "approveword" && !window.confirm(params.strings.confirmapproveword)) {
+        if (action === "approveword" && !await confirmAction(params.strings.confirmapproveword)) {
             return;
         }
 

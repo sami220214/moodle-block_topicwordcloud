@@ -16,8 +16,6 @@
 
 namespace block_topicwordcloud\external;
 
-defined('MOODLE_INTERNAL') || die();
-
 use block_topicwordcloud\local\manager;
 use context_block;
 use core_external\external_api;

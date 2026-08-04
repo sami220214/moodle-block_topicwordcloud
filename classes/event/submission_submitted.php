@@ -16,8 +16,6 @@
 
 namespace block_topicwordcloud\event;
 
-defined('MOODLE_INTERNAL') || die();
-
 use block_topicwordcloud\local\manager;
 
 /**

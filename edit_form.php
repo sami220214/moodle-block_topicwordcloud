@@ -95,8 +95,11 @@ class block_topicwordcloud_edit_form extends block_edit_form {
             $errors['config_wordorder'] = get_string('err_wordorder', 'block_topicwordcloud');
         }
 
-        if (!empty($data['config_opentime']) && !empty($data['config_closetime']) &&
-                $data['config_closetime'] <= $data['config_opentime']) {
+        if (
+            !empty($data['config_opentime']) &&
+            !empty($data['config_closetime']) &&
+            $data['config_closetime'] <= $data['config_opentime']
+        ) {
             $errors['config_closetime'] = get_string('err_closetime', 'block_topicwordcloud');
         }
 

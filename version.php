@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -18,7 +18,7 @@
  * Version metadata for the block_topicwordcloud plugin.
  *
  * @package   block_topicwordcloud
- * @copyright 2026 Sami  Simpanen
+ * @copyright 2026 Sami Simpanen
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

@@ -16,8 +16,6 @@
 
 namespace block_topicwordcloud\event;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Event triggered when all words are removed from a Topic word cloud block.
  *

@@ -16,8 +16,6 @@
 
 namespace block_topicwordcloud\privacy;
 
-defined('MOODLE_INTERNAL') || die();
-
 use block_topicwordcloud\local\manager;
 use context;
 use context_course;
@@ -38,7 +36,7 @@ use core_privacy\local\request\writer;
  * @copyright 2026 Sami Simpanen
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class provider implements metadata_provider, plugin_provider, \core_privacy\local\request\core_userlist_provider {
+class provider implements \core_privacy\local\request\core_userlist_provider, metadata_provider, plugin_provider {
     /**
      * Describe stored metadata.
      *

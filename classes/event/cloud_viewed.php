@@ -16,8 +16,6 @@
 
 namespace block_topicwordcloud\event;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Event triggered when a user views a Topic word cloud block instance.
  *

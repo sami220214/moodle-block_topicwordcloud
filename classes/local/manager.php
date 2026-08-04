@@ -175,10 +175,13 @@ class manager {
             throw new moodle_exception('nowordsdetected', 'block_topicwordcloud');
         }
 
-        if (!$config->allowmultiple && $DB->record_exists(self::ENTRY_TABLE, [
-            'blockinstanceid' => $blockinstanceid,
-            'userid' => $userid,
-        ])) {
+        if (
+            !$config->allowmultiple &&
+            $DB->record_exists(self::ENTRY_TABLE, [
+                'blockinstanceid' => $blockinstanceid,
+                'userid' => $userid,
+            ])
+        ) {
             throw new moodle_exception('multipleanswersdisabled', 'block_topicwordcloud');
         }
 
@@ -353,7 +356,10 @@ class manager {
             ],
         ])->trigger();
 
-        return [self::build_state($blockinstanceid, $USER->id), get_string('wordapproved', 'block_topicwordcloud', $normalizedword)];
+        return [
+            self::build_state($blockinstanceid, $USER->id),
+            get_string('wordapproved', 'block_topicwordcloud', $normalizedword),
+        ];
     }
 
     /**
@@ -545,7 +551,7 @@ class manager {
             return [];
         }
 
-        $maxfrequency = max(array_map(static function($record) {
+        $maxfrequency = max(array_map(static function ($record) {
             return (int) $record->frequency;
         }, $records));
         $result = [];

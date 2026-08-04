@@ -16,8 +16,6 @@
 
 namespace block_topicwordcloud\event;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Event triggered when a pending word is approved in a Topic word cloud block.
  *

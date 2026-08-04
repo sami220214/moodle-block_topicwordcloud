@@ -8,7 +8,7 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTAlILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
@@ -70,8 +70,6 @@ class block_topicwordcloud extends block_base {
      * @return stdClass
      */
     public function get_content(): stdClass {
-        global $PAGE;
-
         if ($this->content !== null) {
             return $this->content;
         }
@@ -140,7 +138,7 @@ class block_topicwordcloud extends block_base {
 
         $this->content->text = $wrapper;
 
-        $PAGE->requires->js_call_amd('block_topicwordcloud/cloud', 'init', [[
+        $this->page->requires->js_call_amd('block_topicwordcloud/cloud', 'init', [[
             'rootid' => $rootid,
             'pollinterval' => 15000,
             'strings' => [

@@ -90,11 +90,12 @@ Key files:
 
 - `block_topicwordcloud.php` block rendering
 - `edit_form.php` block settings
-- `ajax.php` AJAX actions
+- `classes/external/*` and `db/services.php` External Services AJAX actions
 - `classes/local/manager.php` word cloud business logic
 - `db/install.xml` database tables
 - `db/access.php` capabilities
 - `amd/src/cloud.js` browser-side logic
+- `templates/*.mustache` browser-rendered Moodle templates
 - `styles.css` styling
 
 ## Privacy

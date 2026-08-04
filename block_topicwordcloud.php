@@ -142,8 +142,6 @@ class block_topicwordcloud extends block_base {
 
         $PAGE->requires->js_call_amd('block_topicwordcloud/cloud', 'init', [[
             'rootid' => $rootid,
-            'ajaxurl' => (new moodle_url('/blocks/topicwordcloud/ajax.php'))->out(false),
-            'sesskey' => sesskey(),
             'pollinterval' => 15000,
             'strings' => [
                 'emptycloud' => get_string('emptycloud', 'block_topicwordcloud'),

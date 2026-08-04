@@ -90,11 +90,12 @@ Tärkeimmät tiedostot:
 
 - `block_topicwordcloud.php` lohkon renderöinti
 - `edit_form.php` lohkon asetukset
-- `ajax.php` AJAX-toiminnot
+- `classes/external/*` ja `db/services.php` External Services AJAX-toiminnot
 - `classes/local/manager.php` sanapilven liiketoimintalogiikka
 - `db/install.xml` tietokantataulut
 - `db/access.php` capabilityt
 - `amd/src/cloud.js` selainpuolen logiikka
+- `templates/*.mustache` selaimessa renderöitävät Moodle-templatet
 - `styles.css` ulkoasu
 
 ## Tietosuoja

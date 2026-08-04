@@ -1,135 +1,122 @@
-define("block_topicwordcloud/cloud", [], function() {
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * Browser-side behaviour for the Topic word cloud block.
+ *
+ * @module     block_topicwordcloud/cloud
+ * @copyright 2026 Sami Simpanen
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+define("block_topicwordcloud/cloud", ["core/ajax", "core/templates"], function(Ajax, Templates) {
     "use strict";
 
-    const post = async(params, action, extra = {}) => {
-        const body = new URLSearchParams({
-            sesskey: params.sesskey,
-            action: action,
-            blockinstanceid: params.blockinstanceid,
-            ...extra
-        });
-
-        const response = await fetch(params.ajaxurl, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
-            },
-            body: body.toString()
-        });
-
-        const json = await response.json();
-        if (!json.success) {
-            throw new Error(json.error || "Request failed");
-        }
-        return json;
+    const methodNames = {
+        refresh: "block_topicwordcloud_get_state",
+        submit: "block_topicwordcloud_submit_words",
+        reset: "block_topicwordcloud_reset_cloud",
+        deleteword: "block_topicwordcloud_delete_word",
+        approveword: "block_topicwordcloud_approve_word"
     };
 
-    const escapeHtml = (value) => String(value)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/\"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+    const callService = (params, action, extra = {}) => {
+        return Ajax.call([{
+            methodname: methodNames[action],
+            args: {
+                blockinstanceid: params.blockinstanceid,
+                ...extra
+            }
+        }])[0];
+    };
+
+    const replaceTemplate = async(target, templateName, context) => {
+        const {html, js} = await Templates.renderForPromise(templateName, context);
+        Templates.replaceNodeContents(target, html, js);
+    };
+
+    const buildTableContext = (rows, showUsers, strings, canManage, includeApprove) => {
+        return {
+            hasrows: rows.length > 0,
+            rows: rows.map((row) => ({
+                ...row,
+                userdisplay: showUsers ? (row.usernames || []).join(", ") : row.usercount,
+                showactions: canManage,
+                showapprove: includeApprove,
+                approveword: strings.approveword,
+                deleteword: strings.deleteword
+            })),
+            emptytext: includeApprove ? strings.emptypending : strings.emptyanalytics,
+            wordcolumn: strings.wordcolumn,
+            countcolumn: strings.countcolumn,
+            userscolumn: strings.userscolumn,
+            showactions: canManage,
+            actioncolumn: strings.actioncolumn
+        };
+    };
 
     const renderMeta = (root, state, strings) => {
-        const target = root.querySelector('[data-region="meta"]');
-        target.innerHTML = `
-            <div class="block-topicwordcloud__chips">
-                <span class="block-topicwordcloud__chip"><strong>${escapeHtml(strings.responses)}:</strong> ${state.totals.responses}</span>
-                <span class="block-topicwordcloud__chip"><strong>${escapeHtml(strings.responders)}:</strong> ${state.totals.responders}</span>
-                <span class="block-topicwordcloud__chip"><strong>${escapeHtml(strings.uniquewords)}:</strong> ${state.totals.uniquewords}</span>
-                ${state.moderationrequired ? `<span class="block-topicwordcloud__chip"><strong>${escapeHtml(strings.pendingcount)}:</strong> ${state.totals.pending}</span>` : ""}
-                <span class="block-topicwordcloud__chip"><strong>${escapeHtml(strings.remainingwords)}:</strong> ${state.remainingwords}</span>
-            </div>
-        `;
+        return replaceTemplate(root.querySelector('[data-region="meta"]'), "block_topicwordcloud/meta", {
+            responseslabel: strings.responses,
+            responses: state.totals.responses,
+            responderslabel: strings.responders,
+            responders: state.totals.responders,
+            uniquewordslabel: strings.uniquewords,
+            uniquewords: state.totals.uniquewords,
+            showpending: state.moderationrequired,
+            pendinglabel: strings.pendingcount,
+            pending: state.totals.pending,
+            remainingwordslabel: strings.remainingwords,
+            remainingwords: state.remainingwords
+        });
     };
 
     const renderCloud = (root, state, strings) => {
-        const target = root.querySelector('[data-region="cloud"]');
-        if (!state.cloudwords.length) {
-            target.innerHTML = `<p class="block-topicwordcloud__empty">${escapeHtml(strings.emptycloud)}</p>`;
-            return;
-        }
-
-        target.innerHTML = `
-            <div class="block-topicwordcloud__cloudinner">
-                ${state.cloudwords.map((item) => `
-                    <span class="block-topicwordcloud__word block-topicwordcloud__word--${item.colorindex}"
-                        style="font-size:${item.size}px"
-                        title="${escapeHtml(item.word)} (${item.count})">
-                        ${escapeHtml(item.word)}
-                    </span>
-                `).join("")}
-            </div>
-        `;
-    };
-
-    const renderAnalyticsTable = (rows, showUsers, strings, canManage, includeApprove) => {
-        if (!rows.length) {
-            return `<p class="block-topicwordcloud__empty">${escapeHtml(includeApprove ? strings.emptypending : strings.emptyanalytics)}</p>`;
-        }
-
-        return `
-            <div class="table-responsive">
-                <table class="table table-sm">
-                    <thead>
-                        <tr>
-                            <th>${escapeHtml(strings.wordcolumn)}</th>
-                            <th>${escapeHtml(strings.countcolumn)}</th>
-                            <th>${escapeHtml(strings.userscolumn)}</th>
-                            ${canManage ? `<th>${escapeHtml(strings.actioncolumn)}</th>` : ""}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${rows.map((row) => `
-                            <tr>
-                                <td>${escapeHtml(row.word)}</td>
-                                <td>${row.count}</td>
-                                <td>${showUsers ? escapeHtml((row.usernames || []).join(", ")) : row.usercount}</td>
-                                ${canManage ? `<td class="block-topicwordcloud__actions">
-                                    ${includeApprove ? `<button type="button" class="btn btn-sm btn-secondary" data-action="approveword" data-word="${escapeHtml(row.normalizedword)}">${escapeHtml(strings.approveword)}</button>` : ""}
-                                    <button type="button" class="btn btn-sm btn-outline-danger" data-action="deleteword" data-word="${escapeHtml(row.normalizedword)}">${escapeHtml(strings.deleteword)}</button>
-                                </td>` : ""}
-                            </tr>
-                        `).join("")}
-                    </tbody>
-                </table>
-            </div>
-        `;
+        return replaceTemplate(root.querySelector('[data-region="cloud"]'), "block_topicwordcloud/cloud", {
+            haswords: state.cloudwords.length > 0,
+            words: state.cloudwords,
+            emptycloud: strings.emptycloud
+        });
     };
 
     const renderAnalytics = (root, state, strings) => {
         const target = root.querySelector('[data-region="analytics"]');
         if (!state.canviewanalytics) {
-            target.innerHTML = "";
-            return;
+            target.textContent = "";
+            return Promise.resolve();
         }
 
-        target.innerHTML = `
-            <h4 class="block-topicwordcloud__sectiontitle">${escapeHtml(strings.analyticsheading)}</h4>
-            ${renderAnalyticsTable(state.analytics, state.showusernames, strings, state.canmanage, false)}
-        `;
+        return replaceTemplate(target, "block_topicwordcloud/analytics", {
+            heading: strings.analyticsheading,
+            ...buildTableContext(state.analytics, state.showusernames, strings, state.canmanage, false)
+        });
     };
 
     const renderManage = (root, state, strings) => {
         const target = root.querySelector('[data-region="manage"]');
         if (!state.canmanage) {
-            target.innerHTML = "";
-            return;
+            target.textContent = "";
+            return Promise.resolve();
         }
 
-        const pendingMarkup = state.moderationrequired ? `
-            <h4 class="block-topicwordcloud__sectiontitle">${escapeHtml(strings.pendingheading)}</h4>
-            ${renderAnalyticsTable(state.pendingwords, state.showusernames, strings, true, true)}
-        ` : "";
-
-        target.innerHTML = `
-            <h4 class="block-topicwordcloud__sectiontitle">${escapeHtml(strings.manageheading)}</h4>
-            <div class="block-topicwordcloud__toolbar">
-                <button type="button" class="btn btn-outline-danger" data-action="reset">${escapeHtml(strings.resetcloud)}</button>
-            </div>
-            ${pendingMarkup}
-        `;
+        return replaceTemplate(target, "block_topicwordcloud/manage", {
+            heading: strings.manageheading,
+            resetcloud: strings.resetcloud,
+            showpendingtable: state.moderationrequired,
+            pendingheading: strings.pendingheading,
+            pendingtable: buildTableContext(state.pendingwords, state.showusernames, strings, true, true)
+        });
     };
 
     const renderStatus = (root, message) => {
@@ -144,18 +131,20 @@ define("block_topicwordcloud/cloud", [], function() {
         button.disabled = !state.acceptingresponses;
     };
 
-    const render = (root, params, state, message = "") => {
+    const render = async(root, params, state, message = "") => {
         renderStatus(root, message || state.statusmessage);
         renderFormState(root, state);
-        renderMeta(root, state, params.strings);
-        renderCloud(root, state, params.strings);
-        renderAnalytics(root, state, params.strings);
-        renderManage(root, state, params.strings);
+        await Promise.all([
+            renderMeta(root, state, params.strings),
+            renderCloud(root, state, params.strings),
+            renderAnalytics(root, state, params.strings),
+            renderManage(root, state, params.strings)
+        ]);
     };
 
     const refresh = async(root, params, message = "") => {
-        const json = await post(params, "refresh");
-        render(root, params, json.state, message);
+        const json = await callService(params, "refresh");
+        await render(root, params, json.state, message);
     };
 
     const runAction = async(root, params, action, word = "") => {
@@ -170,8 +159,8 @@ define("block_topicwordcloud/cloud", [], function() {
         }
 
         const extra = word ? {word: word} : {};
-        const json = await post(params, action, extra);
-        render(root, params, json.state, json.message || json.state.statusmessage);
+        const json = await callService(params, action, extra);
+        await render(root, params, json.state, json.message || json.state.statusmessage);
     };
 
     return {
@@ -192,9 +181,9 @@ define("block_topicwordcloud/cloud", [], function() {
                 event.preventDefault();
                 const input = root.querySelector('[data-region="input"]');
                 try {
-                    const json = await post(params, "submit", {text: input.value});
+                    const json = await callService(params, "submit", {text: input.value});
                     input.value = "";
-                    render(root, params, json.state, json.message || json.state.statusmessage);
+                    await render(root, params, json.state, json.message || json.state.statusmessage);
                 } catch (error) {
                     renderStatus(root, error.message);
                 }

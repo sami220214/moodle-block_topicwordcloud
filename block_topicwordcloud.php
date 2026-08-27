@@ -78,17 +78,61 @@ class block_topicwordcloud extends block_base {
         $this->content->footer = '';
 
         if (empty($this->instance) || empty($this->instance->id)) {
-            $this->content->text = get_string('pluginname', 'block_topicwordcloud');
+            $this->content->text = $this->get_missing_instance_content();
             return $this->content;
         }
 
+        $this->trigger_cloud_viewed_event();
+
+        $config = manager::get_config_from_block($this);
+        $rootid = $this->get_root_id();
+
+        $this->content->text = $this->get_wrapper_html($config, $rootid);
+        $this->page->requires->js_call_amd('block_topicwordcloud/cloud', 'init', [
+            $rootid,
+        ]);
+
+        return $this->content;
+    }
+
+    /**
+     * Return fallback content for an incomplete block instance.
+     *
+     * @return string
+     */
+    private function get_missing_instance_content(): string {
+        return get_string('pluginname', 'block_topicwordcloud');
+    }
+
+    /**
+     * Trigger the cloud viewed event.
+     *
+     * @return void
+     */
+    private function trigger_cloud_viewed_event(): void {
         \block_topicwordcloud\event\cloud_viewed::create([
             'context' => $this->context,
             'objectid' => (int) $this->instance->id,
         ])->trigger();
+    }
 
-        $config = manager::get_config_from_block($this);
-        $rootid = 'block-topicwordcloud-' . $this->instance->id;
+    /**
+     * Get the DOM root id for this block instance.
+     *
+     * @return string
+     */
+    private function get_root_id(): string {
+        return 'block-topicwordcloud-' . $this->instance->id;
+    }
+
+    /**
+     * Build the block wrapper markup.
+     *
+     * @param stdClass $config
+     * @param string $rootid
+     * @return string
+     */
+    private function get_wrapper_html(stdClass $config, string $rootid): string {
         $statusmessage = manager::get_submission_window_label($config);
         $prompt = format_text(
             $config->prompttext ?: get_string('defaultprompt', 'block_topicwordcloud'),
@@ -134,39 +178,58 @@ class block_topicwordcloud extends block_base {
         $wrapper .= html_writer::div('', 'block-topicwordcloud__cloud', ['data-region' => 'cloud']);
         $wrapper .= html_writer::div('', 'block-topicwordcloud__analytics', ['data-region' => 'analytics']);
         $wrapper .= html_writer::div('', 'block-topicwordcloud__manage', ['data-region' => 'manage']);
+        $wrapper .= html_writer::tag('script', $this->get_client_config_json(), [
+            'type' => 'application/json',
+            'data-region' => 'config',
+        ]);
         $wrapper .= html_writer::end_div();
 
-        $this->content->text = $wrapper;
+        return $wrapper;
+    }
 
-        $this->page->requires->js_call_amd('block_topicwordcloud/cloud', 'init', [[
-            'rootid' => $rootid,
+    /**
+     * Build JSON configuration for the client script.
+     *
+     * @return string
+     */
+    private function get_client_config_json(): string {
+        $json = json_encode([
             'pollinterval' => 15000,
-            'strings' => [
-                'emptycloud' => get_string('emptycloud', 'block_topicwordcloud'),
-                'emptyanalytics' => get_string('emptyanalytics', 'block_topicwordcloud'),
-                'emptypending' => get_string('emptypending', 'block_topicwordcloud'),
-                'analyticsheading' => get_string('analyticsheading', 'block_topicwordcloud'),
-                'manageheading' => get_string('manageheading', 'block_topicwordcloud'),
-                'responses' => get_string('responses', 'block_topicwordcloud'),
-                'responders' => get_string('responders', 'block_topicwordcloud'),
-                'uniquewords' => get_string('uniquewords', 'block_topicwordcloud'),
-                'pendingcount' => get_string('pendingcount', 'block_topicwordcloud'),
-                'wordcolumn' => get_string('wordcolumn', 'block_topicwordcloud'),
-                'countcolumn' => get_string('countcolumn', 'block_topicwordcloud'),
-                'userscolumn' => get_string('userscolumn', 'block_topicwordcloud'),
-                'actioncolumn' => get_string('actioncolumn', 'block_topicwordcloud'),
-                'deleteword' => get_string('deleteword', 'block_topicwordcloud'),
-                'approveword' => get_string('approveword', 'block_topicwordcloud'),
-                'resetcloud' => get_string('resetcloud', 'block_topicwordcloud'),
-                'confirmreset' => get_string('confirmreset', 'block_topicwordcloud'),
-                'confirmdeleteword' => get_string('confirmdeleteword', 'block_topicwordcloud'),
-                'confirmapproveword' => get_string('confirmapproveword', 'block_topicwordcloud'),
-                'pendingheading' => get_string('pendingheading', 'block_topicwordcloud'),
-                'loading' => get_string('loading', 'block_topicwordcloud'),
-                'remainingwords' => get_string('remainingwords', 'block_topicwordcloud'),
-            ],
-        ]]);
+            'strings' => $this->get_client_strings(),
+        ], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT);
 
-        return $this->content;
+        return $json === false ? '{}' : $json;
+    }
+
+    /**
+     * Return strings used by the client script.
+     *
+     * @return array
+     */
+    private function get_client_strings(): array {
+        return [
+            'emptycloud' => get_string('emptycloud', 'block_topicwordcloud'),
+            'emptyanalytics' => get_string('emptyanalytics', 'block_topicwordcloud'),
+            'emptypending' => get_string('emptypending', 'block_topicwordcloud'),
+            'analyticsheading' => get_string('analyticsheading', 'block_topicwordcloud'),
+            'manageheading' => get_string('manageheading', 'block_topicwordcloud'),
+            'responses' => get_string('responses', 'block_topicwordcloud'),
+            'responders' => get_string('responders', 'block_topicwordcloud'),
+            'uniquewords' => get_string('uniquewords', 'block_topicwordcloud'),
+            'pendingcount' => get_string('pendingcount', 'block_topicwordcloud'),
+            'wordcolumn' => get_string('wordcolumn', 'block_topicwordcloud'),
+            'countcolumn' => get_string('countcolumn', 'block_topicwordcloud'),
+            'userscolumn' => get_string('userscolumn', 'block_topicwordcloud'),
+            'actioncolumn' => get_string('actioncolumn', 'block_topicwordcloud'),
+            'deleteword' => get_string('deleteword', 'block_topicwordcloud'),
+            'approveword' => get_string('approveword', 'block_topicwordcloud'),
+            'resetcloud' => get_string('resetcloud', 'block_topicwordcloud'),
+            'confirmreset' => get_string('confirmreset', 'block_topicwordcloud'),
+            'confirmdeleteword' => get_string('confirmdeleteword', 'block_topicwordcloud'),
+            'confirmapproveword' => get_string('confirmapproveword', 'block_topicwordcloud'),
+            'pendingheading' => get_string('pendingheading', 'block_topicwordcloud'),
+            'loading' => get_string('loading', 'block_topicwordcloud'),
+            'remainingwords' => get_string('remainingwords', 'block_topicwordcloud'),
+        ];
     }
 }

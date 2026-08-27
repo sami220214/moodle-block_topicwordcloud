@@ -18,7 +18,7 @@ namespace block_topicwordcloud\privacy;
 
 use block_topicwordcloud\local\manager;
 use context;
-use context_course;
+use context_block;
 use core_privacy\local\metadata\collection;
 use core_privacy\local\metadata\provider as metadata_provider;
 use core_privacy\local\request\approved_contextlist;
@@ -77,15 +77,16 @@ class provider implements \core_privacy\local\request\core_userlist_provider, me
      */
     public static function get_contexts_for_userid(int $userid): contextlist {
         $contextlist = new contextlist();
-        $sql = "SELECT DISTINCT c.id
-                  FROM {context} c
-                  JOIN {" . manager::WORD_TABLE . "} w
-                    ON w.courseid = c.instanceid
-                 WHERE c.contextlevel = :contextlevel
-                   AND w.userid = :userid";
+        $sql = "SELECT contextid
+                  FROM {" . manager::ENTRY_TABLE . "}
+                 WHERE userid = :entryuserid
+                 UNION
+                SELECT contextid
+                  FROM {" . manager::WORD_TABLE . "}
+                 WHERE userid = :worduserid";
         $contextlist->add_from_sql($sql, [
-            'contextlevel' => CONTEXT_COURSE,
-            'userid' => $userid,
+            'entryuserid' => $userid,
+            'worduserid' => $userid,
         ]);
         return $contextlist;
     }
@@ -106,12 +107,12 @@ class provider implements \core_privacy\local\request\core_userlist_provider, me
         $userid = $contextlist->get_user()->id;
 
         foreach ($contextlist->get_contexts() as $context) {
-            if (!$context instanceof context_course) {
+            if (!$context instanceof context_block) {
                 continue;
             }
 
             $entries = $DB->get_records(manager::ENTRY_TABLE, [
-                'courseid' => $context->instanceid,
+                'contextid' => $context->id,
                 'userid' => $userid,
             ], 'timecreated ASC');
 
@@ -156,12 +157,12 @@ class provider implements \core_privacy\local\request\core_userlist_provider, me
     public static function delete_data_for_all_users_in_context(context $context): void {
         global $DB;
 
-        if (!$context instanceof context_course) {
+        if (!$context instanceof context_block) {
             return;
         }
 
-        $DB->delete_records(manager::WORD_TABLE, ['courseid' => $context->instanceid]);
-        $DB->delete_records(manager::ENTRY_TABLE, ['courseid' => $context->instanceid]);
+        $DB->delete_records(manager::WORD_TABLE, ['contextid' => $context->id]);
+        $DB->delete_records(manager::ENTRY_TABLE, ['contextid' => $context->id]);
     }
 
     /**
@@ -176,15 +177,15 @@ class provider implements \core_privacy\local\request\core_userlist_provider, me
         $userid = $contextlist->get_user()->id;
 
         foreach ($contextlist->get_contexts() as $context) {
-            if (!$context instanceof context_course) {
+            if (!$context instanceof context_block) {
                 continue;
             }
             $DB->delete_records(manager::WORD_TABLE, [
-                'courseid' => $context->instanceid,
+                'contextid' => $context->id,
                 'userid' => $userid,
             ]);
             $DB->delete_records(manager::ENTRY_TABLE, [
-                'courseid' => $context->instanceid,
+                'contextid' => $context->id,
                 'userid' => $userid,
             ]);
         }
@@ -197,17 +198,22 @@ class provider implements \core_privacy\local\request\core_userlist_provider, me
      * @return void
      */
     public static function get_users_in_context(userlist $userlist): void {
-        global $DB;
-
         $context = $userlist->get_context();
-        if (!$context instanceof context_course) {
+        if (!$context instanceof context_block) {
             return;
         }
 
         $sql = "SELECT userid
+                  FROM {" . manager::ENTRY_TABLE . "}
+                 WHERE contextid = :entrycontextid
+                 UNION
+                SELECT userid
                   FROM {" . manager::WORD_TABLE . "}
-                 WHERE courseid = :courseid";
-        $userlist->add_from_sql('userid', $sql, ['courseid' => $context->instanceid]);
+                 WHERE contextid = :wordcontextid";
+        $userlist->add_from_sql('userid', $sql, [
+            'entrycontextid' => $context->id,
+            'wordcontextid' => $context->id,
+        ]);
     }
 
     /**
@@ -220,7 +226,7 @@ class provider implements \core_privacy\local\request\core_userlist_provider, me
         global $DB;
 
         $context = $userlist->get_context();
-        if (!$context instanceof context_course) {
+        if (!$context instanceof context_block) {
             return;
         }
 
@@ -230,9 +236,9 @@ class provider implements \core_privacy\local\request\core_userlist_provider, me
         }
 
         [$insql, $params] = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED);
-        $params['courseid'] = $context->instanceid;
+        $params['contextid'] = $context->id;
 
-        $DB->delete_records_select(manager::WORD_TABLE, "courseid = :courseid AND userid $insql", $params);
-        $DB->delete_records_select(manager::ENTRY_TABLE, "courseid = :courseid AND userid $insql", $params);
+        $DB->delete_records_select(manager::WORD_TABLE, "contextid = :contextid AND userid $insql", $params);
+        $DB->delete_records_select(manager::ENTRY_TABLE, "contextid = :contextid AND userid $insql", $params);
     }
 }

@@ -50,6 +50,15 @@ define("block_topicwordcloud/cloud", ["core/ajax", "core/notification", "core/te
         Notification.confirm("", message, resolve, () => resolve(false));
     });
 
+    const getConfig = (root) => {
+        const config = root.querySelector('[data-region="config"]');
+        if (!config || !config.textContent.trim()) {
+            return {};
+        }
+
+        return JSON.parse(config.textContent);
+    };
+
     const buildTableContext = (rows, showUsers, strings, canManage, includeApprove) => {
         return {
             hasrows: rows.length > 0,
@@ -168,12 +177,15 @@ define("block_topicwordcloud/cloud", ["core/ajax", "core/notification", "core/te
     };
 
     return {
-        init: function(params) {
+        init: function(initParams) {
+            const params = typeof initParams === "string" ? {rootid: initParams} : {...initParams};
             const root = document.getElementById(params.rootid);
             if (!root) {
                 return;
             }
 
+            Object.assign(params, getConfig(root));
+            params.strings = params.strings || {};
             params.blockinstanceid = root.dataset.blockinstanceid;
             renderStatus(root, params.strings.loading);
 

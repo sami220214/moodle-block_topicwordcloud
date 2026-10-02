@@ -46,8 +46,9 @@ define("block_topicwordcloud/cloud", ["core/ajax", "core/notification", "core/te
         Templates.replaceNodeContents(target, html, js);
     };
 
-    const confirmAction = (message) => new Promise((resolve) => {
-        Notification.confirm("", message, resolve, () => resolve(false));
+    const confirmAction = (message, strings) => new Promise((resolve, reject) => {
+        Notification.confirm("", message, strings.yes, strings.no,
+            () => resolve(true), () => resolve(false)).catch(reject);
     });
 
     const getConfig = (root) => {
@@ -161,18 +162,21 @@ define("block_topicwordcloud/cloud", ["core/ajax", "core/notification", "core/te
     };
 
     const runAction = async(root, params, action, word = "") => {
-        if (action === "reset" && !await confirmAction(params.strings.confirmreset)) {
+        if (action === "reset" && !await confirmAction(params.strings.confirmreset, params.strings)) {
             return;
         }
-        if (action === "deleteword" && !await confirmAction(params.strings.confirmdeleteword)) {
+        if (action === "deleteword" && !await confirmAction(params.strings.confirmdeleteword, params.strings)) {
             return;
         }
-        if (action === "approveword" && !await confirmAction(params.strings.confirmapproveword)) {
+        if (action === "approveword" && !await confirmAction(params.strings.confirmapproveword, params.strings)) {
             return;
         }
 
         const extra = word ? {word: word} : {};
         const json = await callService(params, action, extra);
+        if (action === "reset") {
+            root.querySelector('[data-region="input"]').value = "";
+        }
         await render(root, params, json.state, json.message || json.state.statusmessage);
     };
 

@@ -225,6 +225,8 @@ class block_topicwordcloud extends block_base {
             'approveword' => get_string('approveword', 'block_topicwordcloud'),
             'resetcloud' => get_string('resetcloud', 'block_topicwordcloud'),
             'confirmreset' => get_string('confirmreset', 'block_topicwordcloud'),
+            'yes' => get_string('yes'),
+            'no' => get_string('no'),
             'confirmdeleteword' => get_string('confirmdeleteword', 'block_topicwordcloud'),
             'confirmapproveword' => get_string('confirmapproveword', 'block_topicwordcloud'),
             'pendingheading' => get_string('pendingheading', 'block_topicwordcloud'),

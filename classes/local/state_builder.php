@@ -353,7 +353,8 @@ class state_builder {
         $params['blockinstanceid'] = $blockinstanceid;
         $params['approved'] = $approved ? 1 : 0;
 
-        $sql = "SELECT w.normalizedword, u.id, u.firstname, u.lastname, u.middlename, u.alternatename,
+        $sql = "SELECT " . $DB->sql_concat('w.normalizedword', "'_'", 'u.id') . " AS uniquekey,
+                       w.normalizedword, u.id, u.firstname, u.lastname, u.middlename, u.alternatename,
                        u.firstnamephonetic, u.lastnamephonetic
                   FROM {" . manager::WORD_TABLE . "} w
                   JOIN {user} u
@@ -361,6 +362,8 @@ class state_builder {
                  WHERE w.blockinstanceid = :blockinstanceid
                    AND w.approved = :approved
                    AND w.normalizedword $insql
+              GROUP BY w.normalizedword, u.id, u.firstname, u.lastname, u.middlename, u.alternatename,
+                       u.firstnamephonetic, u.lastnamephonetic
               ORDER BY w.normalizedword ASC, u.lastname ASC, u.firstname ASC";
 
         $seen = [];
